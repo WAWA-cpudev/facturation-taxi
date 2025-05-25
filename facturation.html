@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Facture Taxi - Nouni Mohamed</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-100 p-4">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow-md">
+    <h1 class="text-2xl font-bold mb-6 text-center underline">
+      TAXI: NOUNI Mohamed 33 2 543 891 - 206/Bordeaux
+    </h1>
+    <form id="taxiForm" class="space-y-6">
+        <div>
+            <label class="block font-semibold underline mb-1">Plaque d'immatriculation</label>
+            <input class="w-full border p-2 rounded" type="text" id="plaque" value="HB-040-CJ" disabled />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Nom prénom</label>
+            <input class="w-full border p-2 rounded" type="text" id="name" required />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Numéro de sécurité sociale</label>
+            <input class="w-full border p-2 rounded" type="text" id="secu" required />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Date de naissance</label>
+            <input class="w-full border p-2 rounded" type="date" id="birthdate" required />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Numéro de téléphone</label>
+            <input class="w-full border p-2 rounded" type="tel" id="phone" required />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Adresse</label>
+            <input class="w-full border p-2 rounded" type="text" id="address" required />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Caisse</label>
+            <input class="w-full border p-2 rounded" type="text" id="caisse" required />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Mutuelle</label>
+            <input class="w-full border p-2 rounded" type="text" id="mutuelle" required />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Type de trajet</label>
+            <div class="flex gap-4 mt-1">
+              <label><input type="checkbox" id="aller" /> Aller</label>
+              <label><input type="checkbox" id="retour" /> Retour</label>
+              <label><input type="checkbox" id="allerRetour" /> Aller/Retour</label>
+            </div>
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Type de course</label>
+            <div class="flex gap-4 mt-1">
+              <label><input type="checkbox" id="courseA" /> A</label>
+              <label><input type="checkbox" id="courseB" /> B</label>
+              <label><input type="checkbox" id="courseC" /> C</label>
+              <label><input type="checkbox" id="courseD" /> D</label>
+            </div>
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Date</label>
+            <input class="w-full border p-2 rounded" type="date" id="date" required />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Kilométrage</label>
+            <input class="w-full border p-2 rounded" type="number" id="km" />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Péage</label>
+            <input class="w-full border p-2 rounded" type="number" id="peage" />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">De / À / Ou</label>
+            <input class="w-full border p-2 rounded" type="text" id="trajet" />
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Horaires Aller</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <input class="border p-2 rounded" type="time" id="allerDebut" placeholder="Début" />
+              <input class="border p-2 rounded" type="time" id="allerFin" placeholder="Fin" />
+              <input class="border p-2 rounded" type="number" id="allerKm" placeholder="KM" />
+              <input class="border p-2 rounded md:col-span-3" type="number" id="allerMontant" placeholder="Montant" />
+            </div>
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Horaires Retour</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <input class="border p-2 rounded" type="time" id="retourDebut" placeholder="Début" />
+              <input class="border p-2 rounded" type="time" id="retourFin" placeholder="Fin" />
+              <input class="border p-2 rounded" type="number" id="retourKm" placeholder="KM" />
+              <input class="border p-2 rounded md:col-span-3" type="number" id="retourMontant" placeholder="Montant" />
+            </div>
+          </div>
+          <div>
+            <label class="block font-semibold underline mb-1">Total</label>
+            <input class="w-full border p-2 rounded" type="number" id="total" />
+          </div>
+          <button type="button" onclick="generatePDF()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Générer PDF</button>
+        </form>
+      </div>
+      <!-- [FORMULAIRE INCHANGÉ ICI POUR GAGNER DE LA PLACE] -->
+    </form>
+  </div>
+
+  <script>
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const $ = id => document.getElementById(id).value;
+      const checked = id => document.getElementById(id).checked ? "Oui" : null;
+
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text("TAXI: NOUNI Mohamed 33 2 543 891 - 206/Bordeaux", 105, 15, null, null, "center");
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+
+      let y = 30;
+      const addSection = (label, value) => {
+        if (value && value.trim() !== "") {
+          doc.setFont(undefined, 'bold');
+          doc.text(`${label}`, 20, y);
+          y += 6;
+          doc.setFont(undefined, 'normal');
+          doc.text(value, 25, y);
+          y += 10;
+        }
+      };
+
+      const concat = (...args) => args.filter(v => v && v.trim() !== '').join(' ');
+
+      addSection("Plaque d'immatriculation", "HB-040-CJ");
+      addSection("Nom prénom", $("name"));
+      addSection("Numéro de sécu", $("secu"));
+      addSection("Date de naissance", $("birthdate"));
+      addSection("Numéro de téléphone", $("phone"));
+      addSection("Adresse", $("address"));
+      addSection("Caisse", $("caisse"));
+      addSection("Mutuelle", $("mutuelle"));
+
+      const trajets = [
+        checked("aller") && "Aller",
+        checked("retour") && "Retour",
+        checked("allerRetour") && "Aller/Retour"
+      ].filter(Boolean).join(", ");
+      addSection("Type de trajet", trajets);
+
+      const courses = [
+        checked("courseA") && "A",
+        checked("courseB") && "B",
+        checked("courseC") && "C",
+        checked("courseD") && "D"
+      ].filter(Boolean).join(", ");
+      addSection("Type de course", courses);
+
+      addSection("Date", $("date"));
+      addSection("Kilométrage", $("km"));
+      addSection("Péage", $("peage"));
+      addSection("De / À / Ou", $("trajet"));
+
+      const horaireAller = ($("allerDebut") || $("allerFin") || $("allerKm") || $("allerMontant")) ?
+        concat(`De ${$("allerDebut")} à ${$("allerFin")}`, `KM: ${$("allerKm")}`, `Montant: ${$("allerMontant")}€`) : null;
+      addSection("Horaires Aller", horaireAller);
+
+      const horaireRetour = ($("retourDebut") || $("retourFin") || $("retourKm") || $("retourMontant")) ?
+        concat(`De ${$("retourDebut")} à ${$("retourFin")}`, `KM: ${$("retourKm")}`, `Montant: ${$("retourMontant")}€`) : null;
+      addSection("Horaires Retour", horaireRetour);
+
+      addSection("Total", $("total") ? `${$("total")} €` : "");
+
+      doc.save(`facture_taxi_nouni_${$("name")}_${$("date")}.pdf`);
+    }
+  </script>
+</body>
+</html>
